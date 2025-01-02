@@ -1,0 +1,6 @@
+# Python cache files
+__pycache__/
+*.pyc
+
+# Cache directory for YouTube transcriptions
+cache/ 

@@ -1,0 +1,14 @@
+customtkinter
+pillow
+pytubefix
+torch
+numba
+more-itertools
+tiktoken
+git+https://github.com/openai/whisper.git
+PyPDF2
+beautifulsoup4
+trafilatura
+requests
+google-generativeai
+python-dotenv 
