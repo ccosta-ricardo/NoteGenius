@@ -3,28 +3,28 @@ from PyPDF2 import PdfReader
 class PDFExtractor:
     def __init__(self, file_path, page_range=None):
         """
-        Inicializa o extrator de PDF.
-        page_range: tupla (início, fim) ou None para todas as páginas
+        Initializes the PDF extractor.
+        page_range: tuple (start, end) or None for all pages
         """
         self.file_path = file_path
         self.page_range = page_range
     
     def extract_text(self):
-        """Extrai texto de um arquivo PDF."""
+        """Extracts text from a PDF file."""
         reader = PdfReader(self.file_path)
         text = ""
         
-        # Define o range de páginas
+        # Define page range
         start = self.page_range[0] - 1 if self.page_range else 0
         end = self.page_range[1] if self.page_range else len(reader.pages)
         
-        # Valida o range
+        # Validate range
         if start < 0 or end > len(reader.pages) or start >= end:
-            raise ValueError("Range de páginas inválido")
+            raise ValueError("Invalid page range")
         
-        # Extrai texto das páginas selecionadas
+        # Extract text from selected pages
         for page_num in range(start, end):
-            text += f"\n--- Página {page_num + 1} ---\n"
+            text += f"\n--- Page {page_num + 1} ---\n"
             text += reader.pages[page_num].extract_text()
         
         return text 

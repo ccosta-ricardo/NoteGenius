@@ -1,3 +1,12 @@
+"""
+GUI implementation for NoteGenius using CustomTkinter.
+Handles all user interactions and visual components including:
+- Input type selection (PDF, YouTube, URL, Manual)
+- Language and layout selection
+- File selection and naming
+- Progress feedback
+"""
+
 import customtkinter as ctk
 from PIL import Image
 import os
@@ -12,15 +21,15 @@ class NoteGenius:
         self.root = root
         self.processor = processor
         
-        # Configuração da janela
+        # Window configuration
         self.root.title("NoteGenius")
         self.root.geometry("600x850")
         
-        # Configuração do tema
+        # Theme configuration
         ctk.set_appearance_mode("system")
         ctk.set_default_color_theme(str(Path(__file__).parent / "theme" / "theme.json"))
         
-        # Header Frame com fundo roxo
+        # Header Frame with primary color background
         header_frame = ctk.CTkFrame(
             root, 
             fg_color=INTERFACE_SETTINGS["primary_color"], 
@@ -29,12 +38,11 @@ class NoteGenius:
         header_frame.pack(fill="x", padx=0, pady=0)
         header_frame.pack_propagate(False)
         
-        # Container para logo e textos
+        # Container for logo and text
         logo_container = ctk.CTkFrame(header_frame, fg_color="transparent")
         logo_container.pack(padx=20, pady=20, fill="x")
         
-
-        # Logo (if you dont have a logo, remove this section)
+        # Logo (if configured)
         try:
             logo_path = INTERFACE_SETTINGS["logo"]["path"]
             logo_img = ctk.CTkImage(
@@ -45,10 +53,9 @@ class NoteGenius:
             logo_label = ctk.CTkLabel(logo_container, image=logo_img, text="")
             logo_label.pack(side="left", padx=(0, 15))
         except Exception as e:
-            print(f"Erro ao carregar logo: {e}")
-
+            print(f"Error loading logo: {e}")
         
-        # Título e Subtítulo
+        # Title and Subtitle
         text_container = ctk.CTkFrame(logo_container, fg_color="transparent")
         text_container.pack(side="left", fill="both", expand=True)
         
@@ -64,7 +71,7 @@ class NoteGenius:
             text_container,
             text="Automated content extraction and summarization for Obsidian",
             font=ctk.CTkFont(size=13),
-            text_color=f"{INTERFACE_SETTINGS['primary_color']}"
+            text_color=INTERFACE_SETTINGS["primary_color"]
         )
         subtitle.pack(anchor="w")
         
@@ -72,7 +79,7 @@ class NoteGenius:
         main_frame = ctk.CTkFrame(root, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=30, pady=20)
         
-        # 1. Source Type
+        # 1. Source Type Selection
         ctk.CTkLabel(main_frame, text="Source Type", anchor="w").pack(fill="x", pady=(0, 5))
         self.source_type = ctk.CTkOptionMenu(
             main_frame,
@@ -102,7 +109,7 @@ class NoteGenius:
             height=36
         )
         
-        # 3. Page Range
+        # 3. Page Range Selection
         self.page_range_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         ctk.CTkLabel(self.page_range_frame, text="Page Range", anchor="w").pack(fill="x", pady=(0, 5))
         self.page_range = ctk.CTkEntry(
@@ -112,7 +119,7 @@ class NoteGenius:
         )
         self.page_range.pack(fill="x")
         
-        # 4. Markdown Filename
+        # 4. Output Filename
         ctk.CTkLabel(main_frame, text="Markdown Filename", anchor="w").pack(fill="x", pady=(0, 5))
         self.filename = ctk.CTkEntry(
             main_frame,
@@ -121,26 +128,26 @@ class NoteGenius:
         )
         self.filename.pack(fill="x", pady=(0, 15))
         
-        # 5. LLM Instructions
+        # 5. AI Instructions
         ctk.CTkLabel(main_frame, text="LLM Instructions", anchor="w").pack(fill="x", pady=(0, 5))
         self.instructions = ctk.CTkTextbox(main_frame, height=100)
         self.instructions.pack(fill="x", pady=(0, 15))
-
-        # Adiciona placeholder com a cor correta
+        
+        # Add placeholder with correct color
         self.instructions.insert("1.0", "Enter any specific instructions for the LLM")
         self.instructions.configure(text_color="gray52")
-
-        # Eventos para gerenciar o placeholder
+        
+        # Events for placeholder management
         def on_focus_in(event):
             if self.instructions.get("1.0", "end-1c") == "Enter any specific instructions for the LLM":
                 self.instructions.delete("1.0", "end")
                 self.instructions.configure(text_color=["gray14", "gray84"])
-
+        
         def on_focus_out(event):
             if not self.instructions.get("1.0", "end-1c").strip():
                 self.instructions.insert("1.0", "Enter any specific instructions for the LLM")
                 self.instructions.configure(text_color="gray52")
-
+        
         self.instructions.bind("<FocusIn>", on_focus_in)
         self.instructions.bind("<FocusOut>", on_focus_out)
         
@@ -194,42 +201,36 @@ class NoteGenius:
             height=36,
             text_color="white"
         )
-        self.generate_btn.pack(fill="x", pady=(15, 0))
+        self.generate_btn.pack(fill="x", pady=(0, 15))
         
-        # Adiciona barra de progresso (inicialmente escondida)
-        self.progress_bar = ctk.CTkProgressBar(
-            main_frame,
-            mode="indeterminate",  # Modo indeterminado (animação contínua)
-            height=4,             # Altura menor para ficar mais elegante
-            corner_radius=2       # Cantos menos arredondados
-        )
-        self.progress_bar.set(0)
+        # Progress Bar (initially hidden)
+        self.progress_bar = ctk.CTkProgressBar(main_frame)
         self.progress_bar.pack(fill="x", pady=(0, 15))
-        self.progress_bar.pack_forget()  # Esconde inicialmente
+        self.progress_bar.pack_forget()
         
-        # Label para status (inicialmente escondido)
+        # Status Label (initially hidden)
         self.status_label = ctk.CTkLabel(
             main_frame, 
             text="Processing...", 
             text_color=INTERFACE_SETTINGS["primary_color"]
         )
         self.status_label.pack(pady=(0, 15))
-        self.status_label.pack_forget()  # Esconde inicialmente
+        self.status_label.pack_forget()
         
-        # Inicializa com PDF File
+        # Initialize with PDF File
         self.on_source_type_change("PDF File")
     
     def on_source_type_change(self, choice):
-        """Gerencia a visibilidade dos campos baseado no tipo selecionado."""
-        # Limpa container
+        """Manages input field visibility based on selected source type."""
+        # Clear container
         for widget in self.input_container.winfo_children():
             widget.pack_forget()
         
-        # Esconde range de páginas por padrão
+        # Hide page range by default
         self.page_range_frame.pack_forget()
         
         if choice == "Manual Input":
-            # Não mostra nenhum campo de entrada
+            # No input field needed
             pass
         elif choice == "PDF File":
             self.file_frame.pack(fill="x")
@@ -242,7 +243,7 @@ class NoteGenius:
             self.url_entry.configure(placeholder_text=placeholder)
     
     def choose_file(self):
-        """Abre diálogo para escolher arquivo."""
+        """Opens file dialog for file selection."""
         filetypes = [
             ('PDF files', '*.pdf'),
             ('Text files', '*.txt'),
@@ -254,7 +255,7 @@ class NoteGenius:
             self.current_file_path = filename
     
     def set_language(self, lang):
-        """Atualiza seleção de idioma."""
+        """Updates language selection."""
         self.language.set(lang)
         for btn in self.language_frame.winfo_children():
             is_selected = btn.cget("text") == LANGUAGES[lang]
@@ -264,7 +265,7 @@ class NoteGenius:
             )
     
     def set_layout(self, layout):
-        """Atualiza seleção de layout."""
+        """Updates layout selection."""
         self.layout.set(layout)
         for btn in self.layout_frame.winfo_children():
             is_selected = btn.cget("text") == LAYOUTS[layout]["name"]
@@ -274,7 +275,7 @@ class NoteGenius:
             )
     
     def show_processing(self, show=True):
-        """Mostra ou esconde os elementos de processamento."""
+        """Shows or hides processing elements."""
         if show:
             self.generate_btn.configure(state="disabled")
             self.progress_bar.pack(fill="x", pady=(0, 15))
@@ -286,9 +287,9 @@ class NoteGenius:
             self.progress_bar.stop()
             self.progress_bar.pack_forget()
             self.status_label.pack_forget()
-
+    
     def process_in_thread(self, source_type, input_value, output_filename, layout, language, instructions, page_range):
-        """Executa o processamento em uma thread separada."""
+        """Executes processing in a separate thread."""
         try:
             success, message = self.processor.process_content(
                 input_type=source_type,
@@ -300,19 +301,19 @@ class NoteGenius:
                 page_range=page_range
             )
             
-            # Volta para a thread principal para atualizar a interface
+            # Return to main thread to update interface
             self.root.after(0, lambda: self.process_complete(success, message, source_type))
             
         except Exception as e:
             self.root.after(0, lambda: self.process_complete(False, str(e), source_type))
-
+    
     def process_complete(self, success, message, source_type):
-        """Chamado quando o processamento é concluído."""
+        """Called when processing is completed."""
         self.show_processing(False)
         
         if success:
             messagebox.showinfo("Success", message)
-            # Limpa os campos após sucesso
+            # Clear fields after success
             if source_type != "pdf":
                 self.url_entry.delete(0, "end")
             self.filename.delete(0, "end")
@@ -323,18 +324,18 @@ class NoteGenius:
             messagebox.showerror("Error", message)
     
     def handle_submit(self):
-        """Processa o formulário."""
+        """Processes the form submission."""
         try:
-            # Validações básicas
+            # Basic validations
             if not self.filename.get():
                 raise ValueError("Please enter a filename")
             
-            # Mapeia o tipo de entrada para o formato esperado pelo processor
+            # Map input type to expected processor format
             source_type_map = {
                 "PDF File": "file",
                 "YouTube Link": "youtube",
                 "Website URL": "url",
-                "Manual Input": "Manual Input"  # Adicionado mapeamento para Manual Input
+                "Manual Input": "Manual Input"
             }
             
             source_type = source_type_map.get(self.source_type.get())
@@ -346,13 +347,13 @@ class NoteGenius:
                     raise ValueError("Please select a PDF file")
                 input_value = self.current_file_path
             elif source_type == "Manual Input":
-                input_value = None  # Para Manual Input não precisamos de input_value
+                input_value = None
             else:
                 if not self.url_entry.get():
                     raise ValueError("Please enter a URL")
                 input_value = self.url_entry.get()
             
-            # Processa range de páginas
+            # Process page range
             page_range = None
             if source_type == "file" and self.page_range.get():
                 try:
@@ -364,10 +365,10 @@ class NoteGenius:
                 except ValueError:
                     raise ValueError("Invalid page range format")
             
-            # Mostra elementos de processamento
+            # Show processing elements
             self.show_processing()
             
-            # Inicia processamento em thread separada
+            # Start processing in separate thread
             thread = threading.Thread(
                 target=self.process_in_thread,
                 args=(

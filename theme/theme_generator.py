@@ -1,9 +1,18 @@
+"""
+Dynamic theme generator for NoteGenius UI.
+Features:
+- Customizable color scheme based on primary color
+- Consistent styling across all UI components
+- Support for both light and dark modes
+- Dynamic theme updates without restart
+"""
+
 import json
 from pathlib import Path
 from config import INTERFACE_SETTINGS
 
 def generate_theme():
-    """Gera o arquivo theme.json com a cor primária do config."""
+    """Generates theme.json file with primary color from config."""
     primary_color = INTERFACE_SETTINGS["primary_color"]
     
     theme = {
@@ -92,11 +101,11 @@ def generate_theme():
         }
     }
     
-    # Garante que o diretório theme existe
+    # Ensure theme directory exists
     theme_dir = Path(__file__).parent
     theme_dir.mkdir(exist_ok=True)
     
-    # Salva o tema
+    # Save theme
     theme_path = theme_dir / "theme.json"
     with open(theme_path, "w") as f:
         json.dump(theme, f, indent=2)
