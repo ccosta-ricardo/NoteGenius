@@ -31,7 +31,7 @@ A desktop application that automates content extraction and summarization for Ob
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/your-username/NoteGenius.git
+git clone https://github.com/ccosta-ricardo/NoteGenius.git
 cd NoteGenius
 ```
 
