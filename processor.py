@@ -40,9 +40,11 @@ class ContentProcessor:
             # 2. Generate summary using AI
             summary = self._generate_summary(content, layout, language, instructions)
             
+            # 3. Add source information
+            source_info = self._get_source_info(input_type, input_value)
+            summary = f"{summary}\n\n_Summary taken from {source_info}_\n\n---\n"
+            
             # Determine the output path
-            print("output_filename:", output_filename)
-            print("OUTPUT_DIR:", OUTPUT_DIR)
             if os.path.isabs(output_filename):
                 # If it's an absolute path (selected existing file), use it directly
                 output_path = output_filename
@@ -52,7 +54,6 @@ class ContentProcessor:
                     output_filename += '.md'
                 output_path = os.path.join(OUTPUT_DIR, output_filename)
             
-            print("output_path:", output_path)
             # Convert to absolute path
             output_path = os.path.abspath(output_path)
             
@@ -149,3 +150,14 @@ class ContentProcessor:
                 f.write(content)
         except Exception as e:
             raise Exception(f"Error saving file to Obsidian: {str(e)}") 
+    
+    def _get_source_info(self, input_type, input_value):
+        """Returns formatted source information based on input type."""
+        if input_type == "youtube":
+            return f"[YouTube Video]({input_value})"
+        elif input_type == "url":
+            return f"[Website]({input_value})"
+        elif input_type == "file":
+            return f"*{os.path.basename(input_value)}*"
+        else:
+            return "Manual Input"
