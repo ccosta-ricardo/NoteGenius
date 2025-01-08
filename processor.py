@@ -30,7 +30,9 @@ class ContentProcessor:
         self.model = genai.GenerativeModel(LLM_MODEL)
     
     def process_content(self, input_type, input_value, output_filename, layout, language, instructions, page_range=None):
-        """Processes content based on input type."""
+        """
+        Process content and generate markdown file.
+        """
         try:
             # 1. Extract content
             content = self._extract_content(input_type, input_value, page_range)
@@ -38,13 +40,29 @@ class ContentProcessor:
             # 2. Generate summary using AI
             summary = self._generate_summary(content, layout, language, instructions)
             
-            # 3. Save file
-            self._save_output(summary, output_filename)
+            # Use absolute file path
+            output_path = os.path.abspath(output_filename)
             
-            return True, "Processing completed successfully!"
-            
+            # Check if file exists
+            if os.path.exists(output_path):
+                mode = "a"  # append mode
+                # Add separator, paragraphs and new content
+                summary = f"\n\n---\n\n\n{summary}"
+            else:
+                mode = "w"  # write mode (new file)
+
+            # Ensure directory exists
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+            # Save content to file
+            with open(output_path, mode, encoding='utf-8') as f:
+                f.write(summary)
+
+            action = "appended to" if mode == "a" else "saved to"
+            return True, f"Content {action} {output_path}"
+
         except Exception as e:
-            return False, f"Error during processing: {str(e)}"
+            return False, f"Error processing content: {str(e)}"
     
     def _extract_content(self, input_type, input_value, page_range=None):
         """Extracts content based on input type."""

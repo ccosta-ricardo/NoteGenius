@@ -12,7 +12,7 @@ from PIL import Image
 import os
 from pathlib import Path
 from processor import ContentProcessor
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 import threading
 from config import LANGUAGES, LAYOUTS, INTERFACE_SETTINGS
 
@@ -121,12 +121,24 @@ class NoteGenius:
         
         # 4. Output Filename
         ctk.CTkLabel(main_frame, text="Markdown Filename", anchor="w").pack(fill="x", pady=(0, 5))
+        filename_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+        filename_frame.pack(fill="x", pady=(0, 15))
+
         self.filename = ctk.CTkEntry(
-            main_frame,
+            filename_frame,
             placeholder_text="Enter filename for the markdown file",
             height=36
         )
-        self.filename.pack(fill="x", pady=(0, 15))
+        self.filename.pack(side="left", fill="x", expand=True, padx=(0, 10))
+
+        choose_markdown_btn = ctk.CTkButton(
+            filename_frame,
+            text="Choose File",
+            command=self.choose_markdown_file,
+            height=36,
+            width=100
+        )
+        choose_markdown_btn.pack(side="right")
         
         # 5. AI Instructions
         ctk.CTkLabel(main_frame, text="LLM Instructions", anchor="w").pack(fill="x", pady=(0, 5))
@@ -291,10 +303,15 @@ class NoteGenius:
     def process_in_thread(self, source_type, input_value, output_filename, layout, language, instructions, page_range):
         """Executes processing in a separate thread."""
         try:
+            # Ensure we use the full file path
+            output_path = output_filename
+            if not os.path.isabs(output_filename):
+                output_path = os.path.join(os.getcwd(), output_filename)
+            
             success, message = self.processor.process_content(
                 input_type=source_type,
                 input_value=input_value,
-                output_filename=output_filename,
+                output_filename=output_path,  # Use complete path
                 layout=layout,
                 language=language,
                 instructions=instructions,
@@ -386,6 +403,17 @@ class NoteGenius:
                 
         except Exception as e:
             messagebox.showerror("Error", str(e))
+    
+    def choose_markdown_file(self):
+        """Opens a dialog to select an existing markdown file"""
+        filename = filedialog.askopenfilename(
+            title="Select Markdown File",
+            filetypes=[("Markdown files", "*.md"), ("All files", "*.*")]
+        )
+        if filename:
+            # Update input field with complete file path
+            self.filename.delete(0, "end")
+            self.filename.insert(0, filename)
 
 def main():
     root = ctk.CTk()
