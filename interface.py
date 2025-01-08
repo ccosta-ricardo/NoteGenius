@@ -303,15 +303,17 @@ class NoteGenius:
     def process_in_thread(self, source_type, input_value, output_filename, layout, language, instructions, page_range):
         """Executes processing in a separate thread."""
         try:
-            # Ensure we use the full file path
-            output_path = output_filename
-            if not os.path.isabs(output_filename):
-                output_path = os.path.join(os.getcwd(), output_filename)
+            # Only convert to absolute path if it's a selected file through "Choose File"
+            # Otherwise, keep it as a simple filename
+            if hasattr(self, 'selected_markdown_file') and self.selected_markdown_file:
+                output_path = self.selected_markdown_file
+            else:
+                output_path = output_filename  # Keep the simple filename
             
             success, message = self.processor.process_content(
                 input_type=source_type,
                 input_value=input_value,
-                output_filename=output_path,  # Use complete path
+                output_filename=output_path,
                 layout=layout,
                 language=language,
                 instructions=instructions,
@@ -411,6 +413,8 @@ class NoteGenius:
             filetypes=[("Markdown files", "*.md"), ("All files", "*.*")]
         )
         if filename:
+            # Store the full path of selected file
+            self.selected_markdown_file = filename
             # Update input field with complete file path
             self.filename.delete(0, "end")
             self.filename.insert(0, filename)

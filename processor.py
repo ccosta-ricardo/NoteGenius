@@ -40,8 +40,21 @@ class ContentProcessor:
             # 2. Generate summary using AI
             summary = self._generate_summary(content, layout, language, instructions)
             
-            # Use absolute file path
-            output_path = os.path.abspath(output_filename)
+            # Determine the output path
+            print("output_filename:", output_filename)
+            print("OUTPUT_DIR:", OUTPUT_DIR)
+            if os.path.isabs(output_filename):
+                # If it's an absolute path (selected existing file), use it directly
+                output_path = output_filename
+            else:
+                # If it's just a filename, put it in OUTPUT_DIR
+                if not output_filename.endswith('.md'):
+                    output_filename += '.md'
+                output_path = os.path.join(OUTPUT_DIR, output_filename)
+            
+            print("output_path:", output_path)
+            # Convert to absolute path
+            output_path = os.path.abspath(output_path)
             
             # Check if file exists
             if os.path.exists(output_path):
