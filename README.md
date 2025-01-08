@@ -93,7 +93,7 @@ python main.py
 - Website URL: Paste any article URL
 - Manual Input: Direct AI processing without source content
 
-3. Enter filename for the markdown file
+3. Enter filename for the markdown file or choose an existing file.
 
 4. (Optional) Add specific instructions for the AI
 
