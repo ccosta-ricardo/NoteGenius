@@ -29,13 +29,13 @@ class ContentProcessor:
         genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
         self.model = genai.GenerativeModel(LLM_MODEL)
     
-    def process_content(self, input_type, input_value, output_filename, layout, language, instructions, page_range=None):
+    def process_content(self, input_type, input_value, output_filename, layout, language, instructions, page_range=None, start_time=None, end_time=None):
         """
         Process content and generate markdown file.
         """
         try:
             # 1. Extract content
-            content = self._extract_content(input_type, input_value, page_range)
+            content = self._extract_content(input_type, input_value, page_range, start_time, end_time)
             
             # 2. Generate summary using AI
             summary = self._generate_summary(content, layout, language, instructions)
@@ -78,7 +78,7 @@ class ContentProcessor:
         except Exception as e:
             return False, f"Error processing content: {str(e)}"
     
-    def _extract_content(self, input_type, input_value, page_range=None):
+    def _extract_content(self, input_type, input_value, page_range=None, start_time=None, end_time=None):
         """Extracts content based on input type."""
         if input_type == "Manual Input":
             return None  # Returns None to indicate no content to extract
@@ -88,7 +88,7 @@ class ContentProcessor:
             return extractor.extract_text()
         
         elif input_type == "youtube":
-            extractor = YouTubeExtractor(input_value)
+            extractor = YouTubeExtractor(input_value, start_time, end_time)
             return extractor.transcribe()
         
         elif input_type == "url":

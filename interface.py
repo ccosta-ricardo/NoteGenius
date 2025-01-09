@@ -109,6 +109,36 @@ class NoteGenius:
             height=36
         )
         
+        # Time Range Frame (initially hidden)
+        self.time_range_frame = ctk.CTkFrame(self.input_container, fg_color="transparent")
+        time_range_label = ctk.CTkLabel(self.time_range_frame, text="Time Range", anchor="w")
+        time_range_label.pack(fill="x", pady=(0, 5))
+
+        time_inputs_frame = ctk.CTkFrame(self.time_range_frame, fg_color="transparent")
+        time_inputs_frame.pack(fill="x")
+
+        # Start time
+        start_frame = ctk.CTkFrame(time_inputs_frame, fg_color="transparent")
+        start_frame.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        ctk.CTkLabel(start_frame, text="Start Time").pack(anchor="w")
+        self.start_time = ctk.CTkEntry(
+            start_frame,
+            placeholder_text="0:00",
+            height=36
+        )
+        self.start_time.pack(fill="x")
+
+        # End time
+        end_frame = ctk.CTkFrame(time_inputs_frame, fg_color="transparent")
+        end_frame.pack(side="left", fill="x", expand=True, padx=(5, 0))
+        ctk.CTkLabel(end_frame, text="End Time").pack(anchor="w")
+        self.end_time = ctk.CTkEntry(
+            end_frame,
+            placeholder_text="Video duration",
+            height=36
+        )
+        self.end_time.pack(fill="x")
+        
         # 3. Page Range Selection
         self.page_range_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         ctk.CTkLabel(self.page_range_frame, text="Page Range", anchor="w").pack(fill="x", pady=(0, 5))
@@ -238,8 +268,9 @@ class NoteGenius:
         for widget in self.input_container.winfo_children():
             widget.pack_forget()
         
-        # Hide page range by default
+        # Hide page range and time range by default
         self.page_range_frame.pack_forget()
+        self.time_range_frame.pack_forget()
         
         if choice == "Manual Input":
             # No input field needed
@@ -249,10 +280,13 @@ class NoteGenius:
             self.file_button.pack(side="left", padx=(0, 10))
             self.file_label.pack(side="left")
             self.page_range_frame.pack(after=self.input_container, fill="x", pady=(0, 15))
+        elif choice == "YouTube Link":
+            self.url_entry.pack(fill="x")
+            self.url_entry.configure(placeholder_text="Enter YouTube URL")
+            self.time_range_frame.pack(after=self.url_entry, fill="x", pady=(15, 0))
         else:
             self.url_entry.pack(fill="x")
-            placeholder = "Enter YouTube URL" if choice == "YouTube Link" else "Enter website URL"
-            self.url_entry.configure(placeholder_text=placeholder)
+            self.url_entry.configure(placeholder_text="Enter website URL")
     
     def choose_file(self):
         """Opens file dialog for file selection."""
@@ -300,7 +334,7 @@ class NoteGenius:
             self.progress_bar.pack_forget()
             self.status_label.pack_forget()
     
-    def process_in_thread(self, source_type, input_value, output_filename, layout, language, instructions, page_range):
+    def process_in_thread(self, source_type, input_value, output_filename, layout, language, instructions, page_range, start_time=None, end_time=None):
         """Executes processing in a separate thread."""
         try:
             # Only convert to absolute path if it's a selected file through "Choose File"
@@ -317,7 +351,9 @@ class NoteGenius:
                 layout=layout,
                 language=language,
                 instructions=instructions,
-                page_range=page_range
+                page_range=page_range,
+                start_time=start_time,
+                end_time=end_time
             )
             
             # Return to main thread to update interface
@@ -384,6 +420,13 @@ class NoteGenius:
                 except ValueError:
                     raise ValueError("Invalid page range format")
             
+            # Get time range for YouTube videos
+            start_time = None
+            end_time = None
+            if source_type == "youtube":
+                start_time = self.start_time.get() or "0:00"
+                end_time = self.end_time.get() or None
+            
             # Show processing elements
             self.show_processing()
             
@@ -397,7 +440,9 @@ class NoteGenius:
                     self.layout.get(),
                     self.language.get(),
                     self.instructions.get("1.0", "end-1c").strip(),
-                    page_range
+                    page_range,
+                    start_time,
+                    end_time
                 )
             )
             thread.daemon = True
