@@ -64,7 +64,9 @@ LAYOUTS = {
         "prompt": """
             Detailed prompt for Book content...
         """
-    },
+    }
+    
+    #add more buttons
 }
 
 # Base prompt template used for all content processing
