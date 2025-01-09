@@ -12,12 +12,12 @@ A desktop application that automates content extraction and summarization for Ob
   - Video summaries
   - Book chapters
   - Articles
-  - Technical documentation (MIAD)
+  - Technical documentation
 - Multi-language support:
   - English
   - Portuguese (European)
   - Spanish
-- Direct integration with Obsidian vault
+- Direct integration with Obsidian vault or any other markdown file
 - Caching system for YouTube transcriptions
 - Modern and clean interface
 
